@@ -40,38 +40,48 @@ public class AuthController {
     }
 
     @GetMapping("/callback")
-public void handleCallback(
-        @RequestParam String code,
-        HttpServletResponse response
-) throws Exception {
+    public void handleCallback(
+            @RequestParam String code,
+            HttpServletResponse response) throws Exception {
+        Map tokenResponse = webClient.post()
+                .uri("https://oauth2.googleapis.com/token")
+                .bodyValue(Map.of(
+                        "code", code,
+                        "client_id", clientId,
+                        "client_secret", clientSecret,
+                        "redirect_uri", redirectUri,
+                        "grant_type", "authorization_code"))
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
 
-    Map tokenResponse = webClient.post()
-            .uri("https://oauth2.googleapis.com/token")
-            .bodyValue(Map.of(
-                    "code", code,
-                    "client_id", clientId,
-                    "client_secret", clientSecret,
-                    "redirect_uri", redirectUri,
-                    "grant_type", "authorization_code"
-            ))
-            .retrieve()
-            .bodyToMono(Map.class)
-            .block();
+        TokenData token = new TokenData();
+        token.access_token = (String) tokenResponse.get("access_token");
+        token.refresh_token = (String) tokenResponse.get("refresh_token");
 
-    TokenData token = new TokenData();
-    token.access_token = (String) tokenResponse.get("access_token");
-    token.refresh_token = (String) tokenResponse.get("refresh_token");
+        TokenStore.save("user1", token);
 
-    TokenStore.save("user1", token);
+        // 👇 Send JS instead of redirect
+        response.setContentType("text/html");
+        response.getWriter().write("""
+                    <html>
+                      <body>
+                        <script>
+                          window.opener.postMessage(
+                            { type: 'GOOGLE_AUTH_SUCCESS' },
+                            'http://localhost:3000'
+                          );
+                          window.close();
+                        </script>
+                      </body>
+                    </html>
+                """);
+    }
 
-    // 🔥 REDIRECT TO FRONTEND
-    response.sendRedirect("http://localhost:3000/dashboard");
-}
     @GetMapping("/status")
     public Map<String, Object> status() {
         return Map.of(
-                "authenticated", TokenStore.get("user1") != null
-        );
+                "authenticated", TokenStore.get("user1") != null);
     }
 
     @PostMapping("/logout")

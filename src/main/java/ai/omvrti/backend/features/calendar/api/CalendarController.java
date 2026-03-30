@@ -21,7 +21,11 @@ public class CalendarController {
         TokenData token = TokenStore.get("user1");
 
         if (token == null || token.access_token == null) {
-            throw new RuntimeException("User not authenticated. Please login.");
+            // throw new RuntimeException("User not authenticated. Please login.");
+            System.out.println("-------------------------------------------");
+            System.out.println("--------------------ERROR -----------------");
+            System.out.println("-------------------------------------------");
+            System.out.println("-------------------------------------------");
         }
 
         return token;
