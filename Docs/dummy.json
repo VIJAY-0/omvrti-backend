@@ -1,0 +1,15 @@
+{
+    "pageTitle": "Create meeting",
+    "fields": {
+        "title": "Title",
+        "description": "Description",
+        "startTime": "Start time",
+        "endTime": "End time",
+        "room": "Room",
+        "participants": "Participants"
+    },
+    "buttons": {
+        "submit": "Create meeting",
+        "cancel": "Cancel"
+    }
+}
