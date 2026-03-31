@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface CalendarClient {
 
-    List<CalendarEvent> getEvents(String accessToken, String calendarId) throws Exception;
+    Object getEvents(String accessToken, String calendarId) throws Exception;
 
     Object listCalendars(String accessToken) throws Exception;
 

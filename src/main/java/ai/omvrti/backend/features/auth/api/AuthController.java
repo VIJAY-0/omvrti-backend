@@ -1,92 +1,70 @@
 package ai.omvrti.backend.features.auth.api;
 
+import ai.omvrti.backend.features.auth.api.response.*;
+import ai.omvrti.backend.features.auth.application.AuthService;
 import ai.omvrti.backend.features.auth.model.TokenData;
 import ai.omvrti.backend.features.auth.storage.TokenStore;
+
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.client.WebClient;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Value("${google.client.id}")
-    private String clientId;
+    private final AuthService service;
 
-    @Value("${google.client.secret}")
-    private String clientSecret;
-
-    @Value("${google.redirect.uri}")
-    private String redirectUri;
-
-    private final WebClient webClient = WebClient.create();
-
-    @GetMapping("/url")
-    public Map<String, String> getAuthUrl() {
-
-        String url = "https://accounts.google.com/o/oauth2/v2/auth" +
-                "?client_id=" + clientId +
-                "&redirect_uri=" + redirectUri +
-                "&response_type=code" +
-                "&scope=https://www.googleapis.com/auth/calendar" +
-                "&access_type=offline" +
-                "&prompt=consent";
-
-        return Map.of("url", url);
+    public AuthController(AuthService service) {
+        this.service = service;
     }
 
-    @GetMapping("/callback")
+    private String getUser() {
+        return "user1"; // replace later with real user
+    }
+
+    @GetMapping("/{provider}/url")
+    public AuthUrlResponse getAuthUrl(@PathVariable String provider) {
+        return new AuthUrlResponse(service.getAuthUrl(provider));
+    }
+
+    @GetMapping("/{provider}/callback")
     public void handleCallback(
+            @PathVariable String provider,
             @RequestParam String code,
-            HttpServletResponse response) throws Exception {
-        Map tokenResponse = webClient.post()
-                .uri("https://oauth2.googleapis.com/token")
-                .bodyValue(Map.of(
-                        "code", code,
-                        "client_id", clientId,
-                        "client_secret", clientSecret,
-                        "redirect_uri", redirectUri,
-                        "grant_type", "authorization_code"))
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
+            HttpServletResponse response
+    ) throws Exception {
+
+        TokenResponse tokenResponse = service.exchangeCode(provider, code);
 
         TokenData token = new TokenData();
-        token.access_token = (String) tokenResponse.get("access_token");
-        token.refresh_token = (String) tokenResponse.get("refresh_token");
+        token.access_token = tokenResponse.accessToken;
+        token.refresh_token = tokenResponse.refreshToken;
 
-        TokenStore.save("user1", token);
+        TokenStore.save(getUser(), provider, token);
 
-        // 👇 Send JS instead of redirect
         response.setContentType("text/html");
         response.getWriter().write("""
-                    <html>
-                      <body>
-                        <script>
-                          window.opener.postMessage(
-                            { type: 'GOOGLE_AUTH_SUCCESS' },
-                            'http://localhost:3000'
-                          );
-                          window.close();
-                        </script>
-                      </body>
-                    </html>
-                """);
+            <script>
+              window.opener.postMessage(
+                { type: 'OAUTH_AUTH_SUCCESS' },
+                'http://localhost:8080'
+              );
+              window.close();
+            </script>
+        """);
     }
 
-    @GetMapping("/status")
-    public Map<String, Object> status() {
-        return Map.of(
-                "authenticated", TokenStore.get("user1") != null);
+    @GetMapping("/{provider}/status")
+    public AuthStatusResponse status(@PathVariable String provider) {
+        return new AuthStatusResponse(
+                TokenStore.get(getUser(), provider) != null
+        );
     }
 
-    @PostMapping("/logout")
-    public Map<String, Object> logout() {
-        TokenStore.save("user1", null);
-        return Map.of("success", true);
+    @PostMapping("/{provider}/logout")
+    public LogoutResponse logout(@PathVariable String provider) {
+        TokenStore.save(getUser(), provider, null);
+        return new LogoutResponse(true);
     }
 }

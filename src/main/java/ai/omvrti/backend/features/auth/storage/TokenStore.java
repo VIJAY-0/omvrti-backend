@@ -2,32 +2,38 @@ package ai.omvrti.backend.features.auth.storage;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
+
 import ai.omvrti.backend.features.auth.model.TokenData;
 
 public class TokenStore {
 
-    private static final Map<String, TokenData> store = new ConcurrentHashMap<>();
+    // userId -> (provider -> token)
+    private static final Map<String, Map<String, TokenData>> store = new ConcurrentHashMap<>();
 
-    public static void save(String userId, TokenData token) {
+    public static void save(String userId, String provider, TokenData token) {
         if (token == null) {
-            store.remove(userId);
-        } else {
-            store.put(userId, token);
+            Map<String, TokenData> userTokens = store.get(userId);
+            if (userTokens != null) {
+                userTokens.remove(provider);
+            }
+            return;
         }
+
+        store
+            .computeIfAbsent(userId, k -> new ConcurrentHashMap<>())
+            .put(provider, token);
     }
 
-    public static TokenData get(String userId) {
-        TokenData token = store.get(userId); // ✅ FIX
+    public static TokenData get(String userId, String provider) {
+        Map<String, TokenData> userTokens = store.get(userId);
+        if (userTokens == null) return null;
 
-        if (token != null){
+        TokenData token = userTokens.get(provider);
 
-            System.out.println("-------------------------------------------------------");
-            System.out.println("-------------------------------------------------------");
-            System.out.println("TOKEN: " + token.access_token);
-            System.out.println("TOKEN: " + token.refresh_token);
-            System.out.println("-------------------------------------------------------");
-            System.out.println("-------------------------------------------------------");
+        if (token != null) {
+            System.out.println("TOKEN [" + provider + "]: " + token.access_token);
         }
-            return token;
+
+        return token;
     }
 }
