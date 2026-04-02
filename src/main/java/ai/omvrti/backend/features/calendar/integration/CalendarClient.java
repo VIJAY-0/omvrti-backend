@@ -1,18 +1,17 @@
 package ai.omvrti.backend.features.calendar.integration;
 
-import ai.omvrti.backend.features.calendar.domain.CalendarEvent;
-
 import java.util.List;
+import ai.omvrti.backend.features.calendar.integration.google.dto.*;
 
 public interface CalendarClient {
 
-    Object getEvents(String accessToken, String calendarId) throws Exception;
+    List<GoogleCalendarDto> listCalendars(String accessToken) throws Exception;
 
-    Object listCalendars(String accessToken) throws Exception;
+    List<GoogleEventDto> getEvents(String accessToken, String calendarId) throws Exception;
 
-    Object createEvent(String accessToken, String calendarId, Object body) throws Exception;
+    GoogleEventDto createEvent(String accessToken, String calendarId, GoogleEventDto event) throws Exception;
 
-    Object quickAdd(String accessToken, String calendarId, String text) throws Exception;
+    GoogleEventDto quickAdd(String accessToken, String calendarId, String text) throws Exception;
 
     void deleteEvent(String accessToken, String calendarId, String eventId) throws Exception;
 }

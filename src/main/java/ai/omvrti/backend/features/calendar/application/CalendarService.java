@@ -1,10 +1,13 @@
 package ai.omvrti.backend.features.calendar.application;
 
 import ai.omvrti.backend.features.calendar.application.provider.CalendarProvider;
-import ai.omvrti.backend.features.calendar.api.request.CreateEventRequest;
+import ai.omvrti.backend.features.calendar.api.dto.request.*;
+import ai.omvrti.backend.features.calendar.domain.*;
+
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.List;
 
 @Service
 public class CalendarService {
@@ -16,42 +19,38 @@ public class CalendarService {
     }
 
     private CalendarProvider getProvider(String provider) {
-
-    String beanKey;
-
-    switch (provider.toLowerCase()) {
-        case "google":
-            beanKey = "googleCalendar";
-            break;
-        case "microsoft":
-            beanKey = "microsoftCalendar";
-            break;
-        default:
-            throw new IllegalArgumentException("Unsupported provider: " + provider);
+        String beanKey;
+        switch (provider.toLowerCase()) {
+            case "google":
+                beanKey = "googleCalendar";
+                break;
+            case "microsoft":
+                beanKey = "microsoftCalendar";
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported provider: " + provider);
+        }
+        CalendarProvider p = providers.get(beanKey);
+        if (p == null) {
+            throw new IllegalStateException("Provider not configured: " + beanKey);
+        }
+        return p;
     }
 
-    CalendarProvider p = providers.get(beanKey);
-
-    if (p == null) {
-        throw new IllegalStateException("Provider not configured: " + beanKey);
-    }
-
-    return p;
-}
-
-    public Object listCalendars(String provider, String token) throws Exception {
+    public List<Calendar> listCalendars(String provider, String token) throws Exception {
         return getProvider(provider).listCalendars(token);
     }
 
-    public Object getEvents(String provider, String token, String calendarId) throws Exception {
+    public List<Event> getEvents(String provider, String token, String calendarId) throws Exception {
         return getProvider(provider).getEvents(token, calendarId);
     }
 
-    public Object createEvent(String provider, String token, String calendarId, CreateEventRequest req) throws Exception {
+    public Event createEvent(String provider, String token, String calendarId, CreateEventRequest req)
+            throws Exception {
         return getProvider(provider).createEvent(token, calendarId, req);
     }
 
-    public Object quickAdd(String provider, String token, String calendarId, String text) throws Exception {
+    public Event quickAdd(String provider, String token, String calendarId, String text) throws Exception {
         return getProvider(provider).quickAdd(token, calendarId, text);
     }
 

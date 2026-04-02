@@ -1,4 +1,4 @@
-package ai.omvrti.backend.features.calendar.api.response;
+package ai.omvrti.backend.features.calendar.api.dto.response;
 
 public class DeleteEventResponse {
 

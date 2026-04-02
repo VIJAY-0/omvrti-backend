@@ -1,4 +1,4 @@
-package ai.omvrti.backend.features.calendar.api.request;
+package ai.omvrti.backend.features.calendar.api.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 

@@ -1,4 +1,6 @@
-package ai.omvrti.backend.features.calendar.api.response;
+package ai.omvrti.backend.features.calendar.api.dto.response;
+
+import ai.omvrti.backend.features.calendar.domain.Calendar;
 
 import java.util.List;
 
@@ -12,6 +14,19 @@ public class CalendarListResponse {
 
     public List<CalendarItem> getCalendars() {
         return calendars;
+    }
+
+    // ✅ ADD THIS
+    public static CalendarListResponse from(List<Calendar> domainCalendars) {
+        List<CalendarItem> items = domainCalendars.stream()
+                .map(c -> new CalendarItem(
+                        c.getId(),
+                        c.getName(),   // mapping name → summary
+                        null           // timezone missing in domain
+                ))
+                .toList();
+
+        return new CalendarListResponse(items);
     }
 
     public static class CalendarItem {

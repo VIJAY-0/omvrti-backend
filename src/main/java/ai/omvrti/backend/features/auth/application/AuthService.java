@@ -23,27 +23,22 @@ public class AuthService {
         return getProvider(provider).exchangeCode(code);
     }
 
-private OAuthProvider getProvider(String provider) {
-
-    String beanKey;
-
-    switch (provider.toLowerCase()) {
-        case "google":
-            beanKey = "googleAuth";
-            break;
-        case "microsoft":
-            beanKey = "microsoftAuth";
-            break;
-        default:
-            throw new IllegalArgumentException("Unsupported provider: " + provider);
+    private OAuthProvider getProvider(String provider) {
+        String beanKey;
+        switch (provider.toLowerCase()) {
+            case "google":
+                beanKey = "googleAuth";
+                break;
+            case "microsoft":
+                beanKey = "microsoftAuth";
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported provider: " + provider);
+        }
+        OAuthProvider p = providers.get(beanKey);
+        if (p == null) {
+            throw new IllegalStateException("Provider not configured: " + beanKey);
+        }
+        return p;
     }
-
-    OAuthProvider p = providers.get(beanKey);
-
-    if (p == null) {
-        throw new IllegalStateException("Provider not configured: " + beanKey);
-    }
-
-    return p;
-}
 }

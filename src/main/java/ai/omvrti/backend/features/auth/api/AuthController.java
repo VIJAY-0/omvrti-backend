@@ -34,15 +34,11 @@ public class AuthController {
             @RequestParam String code,
             HttpServletResponse response
     ) throws Exception {
-
         TokenResponse tokenResponse = service.exchangeCode(provider, code);
-
         TokenData token = new TokenData();
         token.access_token = tokenResponse.accessToken;
         token.refresh_token = tokenResponse.refreshToken;
-
         TokenStore.save(getUser(), provider, token);
-
         response.setContentType("text/html");
         response.getWriter().write("""
             <script>

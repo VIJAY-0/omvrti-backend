@@ -1,4 +1,6 @@
-package ai.omvrti.backend.features.calendar.api.response;
+package ai.omvrti.backend.features.calendar.api.dto.response;
+
+import ai.omvrti.backend.features.calendar.domain.Event;
 
 public class CreateEventResponse {
 
@@ -15,4 +17,13 @@ public class CreateEventResponse {
     public String getId() { return id; }
     public String getStatus() { return status; }
     public String getHtmlLink() { return htmlLink; }
+
+    // ✅ ADD THIS
+    public static CreateEventResponse from(Event event) {
+        return new CreateEventResponse(
+                event.getId(),
+                "confirmed",   // default (Google usually returns this)
+                null           // not available in domain
+        );
+    }
 }

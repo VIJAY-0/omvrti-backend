@@ -1,4 +1,4 @@
-package ai.omvrti.backend.features.calendar.api.response;
+package ai.omvrti.backend.features.calendar.api.dto.response;
 
 import java.util.List;
 
@@ -13,4 +13,5 @@ public class EventListResponse {
     public List<EventResponse> getEvents() {
         return events;
     }
+
 }

@@ -1,14 +1,18 @@
 package ai.omvrti.backend.features.calendar.api;
 
 import ai.omvrti.backend.features.calendar.application.CalendarService;
-import ai.omvrti.backend.features.calendar.api.request.CreateEventRequest;
-import ai.omvrti.backend.features.calendar.api.request.QuickAddRequest;
-import ai.omvrti.backend.features.calendar.api.response.DeleteEventResponse;
+import ai.omvrti.backend.features.calendar.api.dto.request.*;
+import ai.omvrti.backend.features.calendar.api.dto.response.*;
+import ai.omvrti.backend.features.calendar.api.dto.ApiMapper;
+
 import ai.omvrti.backend.features.auth.storage.TokenStore;
 import ai.omvrti.backend.features.auth.model.TokenData;
+import ai.omvrti.backend.features.calendar.domain.*;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/calendar")
@@ -26,47 +30,56 @@ public class CalendarController {
 
     private TokenData getToken(String provider) {
         TokenData token = TokenStore.get(getUser(), provider);
-
         if (token == null || token.access_token == null) {
             throw new RuntimeException("User not authenticated with " + provider);
         }
-
         return token;
     }
 
+    // ===================== CALENDARS =====================
+
     @GetMapping("/{provider}/list")
-    public Object listCalendars(@PathVariable String provider) throws Exception {
+    public CalendarListResponse listCalendars(@PathVariable String provider) throws Exception {
         TokenData token = getToken(provider);
-        return service.listCalendars(provider, token.access_token);
+
+        List<Calendar> calendars =
+                service.listCalendars(provider, token.access_token);
+
+        return ApiMapper.toCalendarListResponse(calendars);
     }
 
+    // ===================== EVENTS =====================
+
     @GetMapping("/{provider}/events")
-    public Object getEvents(
+    public EventListResponse getEvents(
             @PathVariable String provider,
             @RequestParam(defaultValue = "primary") String calendarId
     ) throws Exception {
         TokenData token = getToken(provider);
-        return service.getEvents(provider, token.access_token, calendarId);
+        List<Event> events = service.getEvents(provider, token.access_token, calendarId);
+        return ApiMapper.toEventListResponse(events);
     }
 
     @PostMapping("/{provider}/events")
-    public Object createEvent(
+    public CreateEventResponse createEvent(
             @PathVariable String provider,
             @RequestParam(defaultValue = "primary") String calendarId,
             @Valid @RequestBody CreateEventRequest body
     ) throws Exception {
         TokenData token = getToken(provider);
-        return service.createEvent(provider, token.access_token, calendarId, body);
+        Event event =service.createEvent(provider, token.access_token, calendarId, body);
+        return ApiMapper.toCreateEventResponse(event);
     }
 
     @PostMapping("/{provider}/quick-add")
-    public Object quickAdd(
+    public CreateEventResponse quickAdd(
             @PathVariable String provider,
             @RequestParam(defaultValue = "primary") String calendarId,
             @Valid @RequestBody QuickAddRequest body
     ) throws Exception {
         TokenData token = getToken(provider);
-        return service.quickAdd(provider, token.access_token, calendarId, body.getText());
+        Event event = service.quickAdd(provider, token.access_token, calendarId, body.getText());
+        return ApiMapper.toCreateEventResponse(event);
     }
 
     @DeleteMapping("/{provider}/events/{id}")
@@ -77,6 +90,6 @@ public class CalendarController {
     ) throws Exception {
         TokenData token = getToken(provider);
         service.deleteEvent(provider, token.access_token, calendarId, id);
-        return new DeleteEventResponse(true);
+        return ApiMapper.toDeleteEventResponse(true);
     }
 }
