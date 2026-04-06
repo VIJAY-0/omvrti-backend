@@ -65,11 +65,9 @@ public class GoogleCalendarClient implements CalendarClient {
                         dto.setDescription(item.getDescription());
                         dto.setLocation(item.getLocation());
                         if (item.getStart() != null) {
-                                // Timed event
                                 if (item.getStart().getDateTime() != null) {
                                         dto.setStartDateTime( OffsetDateTime.parse(item.getStart().getDateTime().toString()));
                                 }
-                                // All-day event
                                 else if (item.getStart().getDate() != null) {
                                         dto.setStartDate(LocalDate.parse(item.getStart().getDate().toString()));
                                 }
@@ -83,7 +81,6 @@ public class GoogleCalendarClient implements CalendarClient {
                         }
                         result.add(dto);
                 }
-
                 return result;
         }
 
@@ -94,10 +91,8 @@ public class GoogleCalendarClient implements CalendarClient {
                                 .setSummary(input.getSummary())
                                 .setDescription(input.getDescription())
                                 .setLocation(input.getLocation());
-                event.setStart(new EventDateTime().setDateTime(
-                                new com.google.api.client.util.DateTime(input.getStartDateTime().toString())));
-                event.setEnd(new EventDateTime().setDateTime(
-                                new com.google.api.client.util.DateTime(input.getEndDateTime().toString())));
+                event.setStart(new EventDateTime().setDateTime(new com.google.api.client.util.DateTime(input.getStartDateTime().toString())));
+                event.setEnd(new EventDateTime().setDateTime(new com.google.api.client.util.DateTime(input.getEndDateTime().toString())));
                 Event created = getClient(accessToken)
                                 .events()
                                 .insert(calendarId, event)

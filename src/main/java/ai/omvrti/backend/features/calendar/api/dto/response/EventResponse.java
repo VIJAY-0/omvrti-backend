@@ -16,7 +16,7 @@ public class EventResponse {
     private LocalDate startDate;
     private LocalDate endDate;
 
-    private boolean isSingleDay; 
+    private boolean isSingleDay;
 
     public EventResponse(
             String id,

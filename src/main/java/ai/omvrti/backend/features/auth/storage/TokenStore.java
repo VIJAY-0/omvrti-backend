@@ -18,7 +18,6 @@ public class TokenStore {
             }
             return;
         }
-
         store
             .computeIfAbsent(userId, k -> new ConcurrentHashMap<>())
             .put(provider, token);
@@ -27,13 +26,10 @@ public class TokenStore {
     public static TokenData get(String userId, String provider) {
         Map<String, TokenData> userTokens = store.get(userId);
         if (userTokens == null) return null;
-
         TokenData token = userTokens.get(provider);
-
         if (token != null) {
             System.out.println("TOKEN [" + provider + "]: " + token.access_token);
         }
-
         return token;
     }
 }

@@ -12,11 +12,9 @@ import org.slf4j.LoggerFactory;
 
 
 public class ApiMapper {
-        private static final Logger log = LoggerFactory.getLogger(ApiMapper.class);
-
+    private static final Logger log = LoggerFactory.getLogger(ApiMapper.class);
 
     // ===================== CALENDAR =====================
-
     public static CalendarListResponse toCalendarListResponse(List<Calendar> domainCalendars) {
         List<CalendarListResponse.CalendarItem> items = domainCalendars.stream()
                 .map(c -> new CalendarListResponse.CalendarItem(
@@ -29,7 +27,6 @@ public class ApiMapper {
     }
 
     // ===================== EVENT =====================
-
     public static EventResponse toEventResponse(Event event) {
         EventResponse response = new EventResponse(
                 event.getId(),
